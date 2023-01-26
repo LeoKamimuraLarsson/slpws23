@@ -1,0 +1,12 @@
+h2 Welcome! 
+
+p Here are the various games: 
+
+form action="/games" method="post" 
+    input type="text" name="name" placeholder="Name of new game"/
+    input type="submit" value="Add new game"/
+
+ol
+- @games.each do |game|
+    li 
+        a href="/games/#{game['id']}" #{game["name"]}
