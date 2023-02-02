@@ -1,1 +1,19 @@
-h2 
+a href="/games" Return to the startsite
+
+h2 = @game["name"]
+
+ol
+- @categories.each do |category|
+    li
+        a href="" #{category["name"]}
+
+h3 Admin 
+
+p Change the game's name:
+form action="" method="post" 
+    input type="text" name="" placeholder="New name"/
+    input type="submit" value="Update"/
+
+p Delete game:
+form action="" method="post" 
+    input type="submit" value="Delete game"/
