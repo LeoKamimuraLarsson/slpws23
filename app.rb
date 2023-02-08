@@ -26,9 +26,23 @@ get("/games/:id") do # visa ett spel
     game_id = params[:id]
     
     #@result = db_innerjoin_two("Game.name", "Category.*", "Game", "Category", "Game.id", "Category.game_id", "Game.id", game_id)
-
-    @game = db_get_equal("Game", "name", "id", game_id).first
-    @categories = db_get_equal("Category", "*", "game_id", game_id)
+    
+    @game = db_get_condition("Game", "*", "id = #{game_id}").first
+    @categories = db_get_condition("Category", "*", "game_id = #{game_id}")
 
     slim(:"games/show")
+end
+
+post("/games/:id/update") do
+    game_id = params[:id]
+    new_name = params[:new_name]
+
+    db_update_condition("Game", "name = \'#{new_name}\'", "id = #{game_id}")
+    redirect("/games/#{game_id}")
+end
+
+post("/games/:id/delete") do
+    game_id = params[:id]
+    db_delete("Game", "id = #{game_id}")
+    redirect("/games")
 end

@@ -2,6 +2,12 @@ a href="/games" Return to the startsite
 
 h2 = @game["name"]
 
+p Select a category:
+
+form action="/category" method="post" 
+    input type="text" name="name" placeholder="Name of new category"/
+    input type="submit" value="Add new category"/
+
 ol
 - @categories.each do |category|
     li
@@ -10,10 +16,10 @@ ol
 h3 Admin 
 
 p Change the game's name:
-form action="" method="post" 
-    input type="text" name="" placeholder="New name"/
+form action="/games/#{@game['id']}/update" method="post" 
+    input type="text" name="new_name" placeholder="New name"/
     input type="submit" value="Update"/
 
 p Delete game:
-form action="" method="post" 
+form action="/games/#{@game['id']}/delete" method="post" 
     input type="submit" value="Delete game"/

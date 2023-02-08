@@ -33,23 +33,37 @@ def db_get_one(table, attribute)
     return db.execute("SELECT #{attribute} FROM #{table}")
 end
 
-def db_get_equal(table, attribute, a, b) # a och b är sakerna som jämförs med varandra
+def db_get_condition(table, attribute, condition) # a och b är sakerna som jämförs med varandra
     db = connect_to_mdb()
-    return db.execute("SELECT #{attribute} FROM #{table} WHERE #{a} = #{b}")
+    return db.execute("SELECT #{attribute} FROM #{table} WHERE #{condition}")
 end
 
-def db_innerjoin_two(attribute1, attribute2, table1, table2, on1, on2, where1, where2)
+def db_innerjoin_two(attribute1, attribute2, table1, table2, on, where)
     db = connect_to_mdb_array()
     return db.execute("SELECT #{attribute1}, #{attribute2} 
         FROM #{table1}
         INNER JOIN #{table2}
-        ON #{on1} = #{on2}
-        WHERE #{where1} = #{where2}")
+        ON #{on}
+        WHERE #{where}")
 end
 
 # Insert into database
 
 def db_insert_one_into(table, attribute, variable)
     db = connect_to_mdb()
-    return db.execute("INSERT INTO #{table} (#{attribute}) VALUES (?)", variable)
+    db.execute("INSERT INTO #{table} (#{attribute}) VALUES (?)", variable)
+end
+
+# Update database
+
+def db_update_condition(table, set, condition)
+    db = connect_to_mdb()
+    db.execute("UPDATE #{table} SET #{set} WHERE #{condition}")
+end
+
+# Delete from database
+
+def db_delete(table, condition)
+    db = connect_to_mdb_array()
+    db.execute("DELETE FROM #{table} WHERE #{condition}")
 end
