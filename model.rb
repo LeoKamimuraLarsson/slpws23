@@ -64,13 +64,23 @@ def db_get_many_equal(table, attribute, array1, array2)
     return db.execute("SELECT #{attribute} FROM #{table} WHERE #{condition}}")
 end
 
-def db_innerjoin_two(attribute1, attribute2, table1, table2, on, where)
+def db_innerjoin_two(attribute1, attribute2, table1, table2, on1, on2, on3, on4, a, b)
     db = connect_to_mdb_array()
     return db.execute("SELECT #{attribute1}, #{attribute2} 
         FROM #{table1}
         INNER JOIN #{table2}
-        ON #{on}
-        WHERE #{where}")
+        ON #{on1} = #{one2} AND #{on3} = #{on4}
+        WHERE #{a} = #{b}")
+end
+
+def db_get_articles_in_category(category_id)
+    db = connect_to_mdb()
+    return db.execute("
+        SELECT Article.*
+        FROM Category
+        INNER JOIN Article, Article_Category_Relation
+        ON Category.id = Article_Category_Relation.category_id AND Article.id = Article_Category_Relation.article_id
+        WHERE Category.id = #{category_id}")
 end
 
 # Insert into database

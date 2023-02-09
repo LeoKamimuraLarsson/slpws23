@@ -28,7 +28,7 @@ get("/games/:id") do # visa ett spel
     #@result = db_innerjoin_two("Game.name", "Category.*", "Game", "Category", "Game.id", "Category.game_id", "Game.id", game_id)
     
     @game = db_get_one_equal("Game", "*", "id", game_id).first
-    @categories = db_get_one_equal("Category", "*", "game_id", game_id) # ändra condition. vill inte ha någon sql kod.
+    @categories = db_get_one_equal("Category", "*", "game_id", game_id) 
 
     slim(:"games/show")
 end
@@ -53,4 +53,18 @@ post("/categories") do # lägg till ny kategori
 
     db_insert_into("Category", "name, game_id", name, game_id)
     redirect("/games/#{game_id}")
+end
+
+get("/categories/:id") do
+    cat_id = params[:id]
+
+    @articles = db_get_articles_in_category(cat_id)
+    @categories = db_get_one_equal("Category", "*", "id", cat_id).first
+    
+    game_id = @categories["game_id"]
+    @game = db_get_one_equal("Game", "*", "id", game_id).first
+    p @game
+    
+
+    slim(:"categories/show")
 end
