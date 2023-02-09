@@ -27,8 +27,8 @@ get("/games/:id") do # visa ett spel
     
     #@result = db_innerjoin_two("Game.name", "Category.*", "Game", "Category", "Game.id", "Category.game_id", "Game.id", game_id)
     
-    @game = db_get_condition("Game", "*", "id = #{game_id}").first
-    @categories = db_get_condition("Category", "*", "game_id = #{game_id}") # ändra condition. vill inte ha någon sql kod.
+    @game = db_get_one_equal("Game", "*", "id", game_id).first
+    @categories = db_get_one_equal("Category", "*", "game_id", game_id) # ändra condition. vill inte ha någon sql kod.
 
     slim(:"games/show")
 end
@@ -47,11 +47,10 @@ post("/games/:id/delete") do
     redirect("/games")
 end
 
-post("/category") do # lägg till ny kategori
+post("/categories") do # lägg till ny kategori
     name = params[:name]
+    game_id = params[:game_id]
 
-    # problem!!! behöver spelets id!!!
-
-    db_insert_one_into("Category", "name", name)
-    redirect("/")
+    db_insert_into("Category", "name, game_id", name, game_id)
+    redirect("/games/#{game_id}")
 end

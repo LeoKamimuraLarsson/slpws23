@@ -4,8 +4,9 @@ h2 = @game["name"]
 
 p Select a category:
 
-form action="/category" method="post" 
-    input type="text" name="name" placeholder="Name of new category"/
+form action="/categories" method="post" 
+    input type="text" name="name" placeholder="Name of new category" autocomplete="off"/
+    input type="hidden" name="game_id" value="#{@game['id']}"/
     input type="submit" value="Add new category"/
 
 ol
@@ -17,7 +18,7 @@ h3 Admin
 
 p Change the game's name:
 form action="/games/#{@game['id']}/update" method="post" 
-    input type="text" name="new_name" placeholder="New name"/
+    input type="text" name="new_name" placeholder="New name" autocomplete="off"/
     input type="submit" value="Update"/
 
 p Delete game:

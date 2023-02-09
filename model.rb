@@ -33,9 +33,35 @@ def db_get_one(table, attribute)
     return db.execute("SELECT #{attribute} FROM #{table}")
 end
 
-def db_get_condition(table, attribute, condition) # a och b är sakerna som jämförs med varandra
+def db_get_one_equal(table, attribute, a, b) 
     db = connect_to_mdb()
-    return db.execute("SELECT #{attribute} FROM #{table} WHERE #{condition}")
+    return db.execute("SELECT #{attribute} FROM #{table} WHERE #{a} = #{b}")
+end
+
+def db_get_many_equal(table, attribute, array1, array2) 
+    db = connect_to_mdb()
+
+    if array1.length != array2.length 
+        raise "Array1 och array2 har inte lika många element"
+    elsif array1.length == 0
+        raise "Arrays är tomma"
+    end
+
+    condition = ""
+
+    i = 0
+    while i < array1.length
+
+        condition += "#{array1[i]} = #{array2[i]}"
+
+        if i < array1.length - 1 # om inte sista elementet
+            condition += " AND "
+        end
+
+        i += 1
+    end
+    
+    return db.execute("SELECT #{attribute} FROM #{table} WHERE #{condition}}")
 end
 
 def db_innerjoin_two(attribute1, attribute2, table1, table2, on, where)
@@ -53,11 +79,6 @@ def db_insert_one_into(table, attribute, variable)
     db = connect_to_mdb()
     db.execute("INSERT INTO #{table} (#{attribute}) VALUES (?)", variable)
 end
-
-#def db_insert_two_into(table, attributes, variable1, varable2)
-#    db = connect_to_mdb()
-#    db.execute("INSERT INTO #{table} (#{attributes}) VALUES (?, ?)", variable1, varable2)
-#end
 
 def db_insert_into(table, attributes, *variables)
     db = connect_to_mdb()
