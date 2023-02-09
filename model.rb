@@ -54,6 +54,23 @@ def db_insert_one_into(table, attribute, variable)
     db.execute("INSERT INTO #{table} (#{attribute}) VALUES (?)", variable)
 end
 
+#def db_insert_two_into(table, attributes, variable1, varable2)
+#    db = connect_to_mdb()
+#    db.execute("INSERT INTO #{table} (#{attributes}) VALUES (?, ?)", variable1, varable2)
+#end
+
+def db_insert_into(table, attributes, *variables)
+    db = connect_to_mdb()
+
+    question_marks = ""    
+    variables.each do |variable|
+        question_marks += " ?,"
+    end
+    question_marks = question_marks[0...-1]
+
+    db.execute("INSERT INTO #{table} (#{attributes}) VALUES (#{question_marks})", variables)
+end
+
 # Update database
 
 def db_update_condition(table, set, condition)
