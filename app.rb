@@ -65,11 +65,11 @@ get("/categories/:id") do
     cat_id = params[:id]
 
     @articles = db_get_articles_in_category(cat_id)
-    @categories = db_get_all_equal("Category", "id", cat_id).first
+    @category = db_get_all_equal("Category", "id", cat_id).first
     
-    game_id = @categories["game_id"]
+    game_id = @category["game_id"]
     @game = db_get_all_equal("Game", "id", game_id).first
-    #p @game
+    #p @categories
     
 
     slim(:"categories/show")

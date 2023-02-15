@@ -1,3 +1,24 @@
-a href="/games/#{@game['id']}" Go back
+p
+    a href="/games" Return to the startsite
+p
+    a href="/games/#{@game['id']}" Return to #{@game["name"]}
 
-p = @articles
+h2 #{@game["name"]} - #{@category["name"]}
+
+p Select an article:
+
+ol
+- @articles.each do |article|
+    li
+        a href="#" #{article["name"]}
+
+h3 Admin 
+
+p Change the category's name:
+form action="#" method="post" 
+    input type="text" name="new_name" placeholder="New name" autocomplete="off"/
+    input type="submit" value="Update"/
+
+p Delete category:
+form action="#" method="post" 
+    input type="submit" value="Delete category"/
