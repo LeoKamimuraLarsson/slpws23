@@ -12,7 +12,7 @@ get("/") do
 end
 
 get("/games") do # visa alla spel
-    @games = db_get_all("Game")
+    @games = db_get_all_order_asc("Game", "name")
     slim(:"games/index")
 end 
 
@@ -31,7 +31,7 @@ get("/games/:id") do # visa ett spel
     #@result = db_innerjoin_two("Game.name", "Category.*", "Game", "Category", "Game.id", "Category.game_id", "Game.id", game_id)
     
     @game = db_get_all_equal("Game", "id", game_id).first
-    @categories = db_get_all_equal("Category", "game_id", game_id) 
+    @categories = db_get_all_equal_order_asc("Category", "game_id", game_id, "name") 
 
     slim(:"games/show")
 end
@@ -69,8 +69,21 @@ get("/categories/:id") do
     
     game_id = @category["game_id"]
     @game = db_get_all_equal("Game", "id", game_id).first
-    #p @categories
     
-
     slim(:"categories/show")
+end
+
+post("/categories/:id/update") do
+    category_id = params[:id]
+    new_name = params[:new_name]
+
+    db_update_condition("Category", "name", new_name, "id", category_id)
+    redirect("/categories/#{category_id}")
+end
+
+post("/categories/:id/delete") do
+    category_id = params[:id]
+    game_id = params[:game_id]
+    db_delete("Category", "id", category_id)
+    redirect("/games/#{game_id}")
 end

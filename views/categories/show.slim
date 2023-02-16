@@ -15,10 +15,11 @@ ol
 h3 Admin 
 
 p Change the category's name:
-form action="#" method="post" 
+form action="/categories/#{@category['id']}/update" method="post" 
     input type="text" name="new_name" placeholder="New name" autocomplete="off"/
     input type="submit" value="Update"/
 
 p Delete category:
-form action="#" method="post" 
+form action="/categories/#{@category['id']}/delete" method="post" 
     input type="submit" value="Delete category"/
+    input type="hidden" name="game_id" value="#{@game['id']}"/

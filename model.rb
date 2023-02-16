@@ -28,9 +28,19 @@ def db_get_all(table)
     return db.execute("SELECT * FROM #{table}")
 end
 
+def db_get_all_order_asc(table, order_attribute)
+    db = connect_to_mdb()
+    return db.execute("SELECT * FROM #{table} ORDER BY #{order_attribute} ASC")
+end
+
 def db_get_all_equal(table, compare_attribute, variable) 
     db = connect_to_mdb()
     return db.execute("SELECT * FROM #{table} WHERE #{compare_attribute} = ?", variable)
+end
+
+def db_get_all_equal_order_asc(table, compare_attribute, variable, order_attribute) 
+    db = connect_to_mdb()
+    return db.execute("SELECT * FROM #{table} WHERE #{compare_attribute} = ? ORDER BY #{order_attribute} ASC", variable)
 end
 
 def db_get_one(table, attribute)
@@ -50,7 +60,7 @@ def db_get_articles_in_category(category_id)
         FROM Category
         INNER JOIN Article, Article_Category_Relation
         ON Category.id = Article_Category_Relation.category_id AND Article.id = Article_Category_Relation.article_id
-        WHERE Category.id = ?", category_id)
+        WHERE Category.id = ? ORDER BY Article.name ASC", category_id)
 end
 
 # Insert into database
