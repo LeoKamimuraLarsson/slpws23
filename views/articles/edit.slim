@@ -1,0 +1,16 @@
+p
+    a href="/games" Return to the startsite
+
+p
+    a href="/articles/#{@article['id']}" Return to the article
+
+h2 Editing #{@game["name"]} - #{@article["name"]}
+
+form action="/articles/#{@article['id']}/update" method="post" 
+    p Title:
+    input type="text" name="new_title" value="#{@article['name']}" autocomplete="off"/
+    p Text:
+    input type="text" name="new_text" value="#{@article['text']}" autocomplete="off"/
+    input type="submit" value="Update"/
+
+/ Glöm inte att också lägga till att man ska kunna välja mellan olika kategorier

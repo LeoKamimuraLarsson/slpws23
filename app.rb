@@ -51,6 +51,8 @@ post("/games/:id/delete") do
     redirect("/games")
 end
 
+# ----- Categories -----
+
 post("/categories") do # lägg till ny kategori
     name = params[:name]
     game_id = params[:game_id]
@@ -86,4 +88,23 @@ post("/categories/:id/delete") do
     game_id = params[:game_id]
     db_delete("Category", "id", category_id)
     redirect("/games/#{game_id}")
+end
+
+# ----- Articles -----
+
+get("/articles/:id") do
+    article_id = params[:id]
+    @article = db_get_all_equal("Article", "id", article_id).first
+    @game = db_get_all_equal("Game", "id", @article['game_id']).first
+    @categories = db_get_categories_containing_article(article_id)
+    
+    slim(:"articles/show")
+end
+
+get("/articles/:id/edit") do
+    article_id = params[:id]
+    @article = db_get_all_equal("Article", "id", article_id).first
+    @game = db_get_all_equal("Game", "id", @article['game_id']).first
+
+    slim(:"articles/edit")
 end

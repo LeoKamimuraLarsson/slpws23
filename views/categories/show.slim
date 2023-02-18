@@ -10,7 +10,7 @@ p Select an article:
 ol
 - @articles.each do |article|
     li
-        a href="#" #{article["name"]}
+        a href="/articles/#{article['id']}" #{article["name"]}
 
 h3 Admin 
 

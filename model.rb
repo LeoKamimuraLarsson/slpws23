@@ -63,6 +63,16 @@ def db_get_articles_in_category(category_id)
         WHERE Category.id = ? ORDER BY Article.name ASC", category_id)
 end
 
+def db_get_categories_containing_article(article_id)
+    db = connect_to_mdb()
+    return db.execute("
+        SELECT Category.*
+        FROM Article_Category_Relation
+        INNER JOIN Category, Article
+        ON Category.id = Article_Category_Relation.category_id AND Article.id = Article_Category_Relation.article_id
+        WHERE Article.id = ?", article_id)
+end
+
 # Insert into database
 
 def db_insert_one_into(table, attribute, variable)
