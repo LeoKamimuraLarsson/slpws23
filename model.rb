@@ -1,6 +1,6 @@
 require 'sqlite3'
 
-# Methods
+#  ----- Databas -----
 
 def connect_to_db(path) #hash return
     db = SQLite3::Database.new(path)
@@ -99,9 +99,38 @@ def db_update_condition(table, set_attribute, set_variable, compare_attribute, c
     db.execute("UPDATE #{table} SET #{set_attribute} = ? WHERE #{compare_attribute} = ?", set_variable, compare_variable)
 end
 
+def db_update_two_condition(table, set_attribute1, set_variable1, set_attribute2, set_variable2, compare_attribute, compare_variable)
+    db = connect_to_mdb()
+    db.execute("UPDATE #{table} SET #{set_attribute1} = ?, #{set_attribute2} = ? WHERE #{compare_attribute} = ?", set_variable1, set_variable2, compare_variable)
+end
+
 # Delete from database
 
 def db_delete(table, compare_attribute, variable)
     db = connect_to_mdb_array()
     db.execute("DELETE FROM #{table} WHERE #{compare_attribute} = ?", variable)
+end
+
+#  ----- Valideringar -----
+=begin
+def is_integer_empty(check_string) 
+    # kollar om det endast är siffror. Returnar true om strängen är tom eller en integer.
+    return check_string.scan(/\D/).empty?
+end
+=end
+
+def is_empty(string)
+    work_string = string
+
+    i = work_string.length - 1
+    while work_string.length > 0
+        if work_string[i] == " "
+            work_string.chop!
+        else
+            break
+        end
+        i -= 1
+    end
+
+    return work_string.empty?
 end

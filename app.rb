@@ -5,7 +5,25 @@ require 'bcrypt'
 require_relative './model.rb'
 enable :sessions
 
-# routes
+# ----- Methods -----
+
+=begin 
+def all_of(*strings)
+    return strings.join("|")
+end
+   
+
+# ----- Routes -----
+
+before(all_of("/games/:id", "/games/:id/update", "/games/:id/delete", "/categories/:id", "/categories/:id/update", "/categories/:id/delete", "/articles/:id", "/articles/:id/edit", "/articles/:id/update",)) do
+    id = params[:id]
+    if !is_integer_empty(id)
+        redirect("/invalid_id")
+    end
+end 
+=end
+
+# ----- Games -----
 
 get("/") do
     redirect("/games")
@@ -20,6 +38,9 @@ post("/games") do # lägg nytt spel
     name = params[:name]
 
     # kolla om namnet är tomt
+    if (is_empty(name))
+        redirect("/invalid")
+    end
 
     db_insert_one_into("Game", "name", name)
     redirect("/")
@@ -41,7 +62,6 @@ post("/games/:id/update") do
     new_name = params[:new_name]
 
     db_update_condition("Game", "name", new_name, "id", game_id)
-    #db_update_condition("Game", "name = \'#{new_name}\'", "id = #{game_id}")
     redirect("/games/#{game_id}")
 end
 
@@ -58,6 +78,9 @@ post("/categories") do # lägg till ny kategori
     game_id = params[:game_id]
 
     # kolla om namnet är tomt
+    if (is_empty(name))
+        redirect("/invalid")
+    end
 
     db_insert_into("Category", "name, game_id", name, game_id)
     redirect("/games/#{game_id}")
@@ -107,4 +130,19 @@ get("/articles/:id/edit") do
     @game = db_get_all_equal("Game", "id", @article['game_id']).first
 
     slim(:"articles/edit")
+end
+
+post("/articles/:id/update") do
+    article_id = params[:id]
+    new_title = params[:new_title]
+    new_text = params[:new_text]
+
+    db_update_two_condition("Article", "name", new_title, "text", new_text, "id", article_id)
+    redirect("articles/#{article_id}")
+end
+
+# ----- Universal routes -----
+
+get("/invalid") do
+    slim(:invalid)
 end
