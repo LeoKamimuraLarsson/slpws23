@@ -132,6 +132,7 @@ end
 
 post("/articles") do # lägg till ny artikel
     game_id = params[:game_id]
+    primary_category_id = params[:primary_category_id]
     title = params[:new_title]
     text = params[:new_text]
 
@@ -144,6 +145,8 @@ post("/articles") do # lägg till ny artikel
     new_article = db_get_all_order_asc("Article", "id").last() # Den nyaste artikeln är alltid sist.
 
     # lägg till i article_category_relation
+    db_insert_into("Article_Category_Relation", "article_id, category_id", new_article["id"], primary_category_id)
+
     all_categories = db_get_all_equal("Category", "game_id", game_id)
     all_categories.each do |category| 
         # params[:"#{category["name"]}"] är om checkboxen för kategorin har värdet True eller nil
