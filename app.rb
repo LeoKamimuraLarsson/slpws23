@@ -5,24 +5,6 @@ require 'bcrypt'
 require_relative './model.rb'
 enable :sessions
 
-# ----- Methods -----
-
-=begin 
-def all_of(*strings)
-    return strings.join("|")
-end
-   
-
-# ----- Routes -----
-
-before(all_of("/games/:id", "/games/:id/update", "/games/:id/delete", "/categories/:id", "/categories/:id/update", "/categories/:id/delete", "/articles/:id", "/articles/:id/edit", "/articles/:id/update",)) do
-    id = params[:id]
-    if !is_integer_empty(id)
-        redirect("/invalid_id")
-    end
-end 
-=end
-
 # ----- Games -----
 
 get("/") do
@@ -49,7 +31,9 @@ end
 get("/games/:id") do # visa ett spel
     game_id = params[:id]
     
-    #@result = db_innerjoin_two("Game.name", "Category.*", "Game", "Category", "Game.id", "Category.game_id", "Game.id", game_id)
+    if !is_integer_empty(game_id)
+        redirect("/invalid")
+    end
     
     @game = db_get_all_equal("Game", "id", game_id).first
     @categories = db_get_all_equal_order_asc("Category", "game_id", game_id, "name") 
@@ -61,12 +45,21 @@ post("/games/:id/update") do
     game_id = params[:id]
     new_name = params[:new_name]
 
+    if !is_integer_empty(game_id)
+        redirect("/invalid")
+    end
+
     db_update_condition("Game", "name", new_name, "id", game_id)
     redirect("/games/#{game_id}")
 end
 
 post("/games/:id/delete") do
     game_id = params[:id]
+
+    if !is_integer_empty(game_id)
+        redirect("/invalid")
+    end
+
     db_delete("Game", "id", game_id)
     redirect("/games")
 end
@@ -88,6 +81,9 @@ end
 
 get("/categories/:id") do
     cat_id = params[:id]
+    if !is_integer_empty(cat_id)
+        redirect("/invalid")
+    end
 
     @articles = db_get_articles_in_category(cat_id)
     @category = db_get_all_equal("Category", "id", cat_id).first
@@ -102,6 +98,10 @@ post("/categories/:id/update") do
     category_id = params[:id]
     new_name = params[:new_name]
 
+    if !is_integer_empty(cat_id)
+        redirect("/invalid")
+    end
+
     db_update_condition("Category", "name", new_name, "id", category_id)
     redirect("/categories/#{category_id}")
 end
@@ -109,14 +109,59 @@ end
 post("/categories/:id/delete") do
     category_id = params[:id]
     game_id = params[:game_id]
+
+    if !is_integer_empty(cat_id)
+        redirect("/invalid")
+    end
+
     db_delete("Category", "id", category_id)
     redirect("/games/#{game_id}")
 end
 
 # ----- Articles -----
 
+get("/articles/new") do
+    game_id = params[:game_id]
+    category_id = params[:category_id]
+    @game = db_get_all_equal("Game", "id", game_id).first
+    @category = db_get_all_equal("Category", "id", category_id).first
+    @all_categories = db_get_all_equal_order_asc("Category", "game_id", game_id, "name")
+
+    slim(:"articles/new")
+end
+
+post("/articles") do # lägg till ny artikel
+    game_id = params[:game_id]
+    title = params[:new_title]
+    text = params[:new_text]
+
+    if (is_empty(title))
+        redirect("/invalid")
+    end
+
+    # lägg till artikeln
+    db_insert_into("Article", "name, text, game_id", title, text, game_id)
+    new_article = db_get_all_order_asc("Article", "id").last() # Den nyaste artikeln är alltid sist.
+
+    # lägg till i article_category_relation
+    all_categories = db_get_all_equal("Category", "game_id", game_id)
+    all_categories.each do |category| 
+        # params[:"#{category["name"]}"] är om checkboxen för kategorin har värdet True eller nil
+        if (params[:"#{category["name"]}"] == "True")
+            db_insert_into("Article_Category_Relation", "article_id, category_id", new_article["id"], category["id"])
+        end
+        
+    end
+    redirect("/articles/#{new_article['id']}")
+end
+
 get("/articles/:id") do
     article_id = params[:id]
+
+    if !is_integer_empty(article_id)
+        redirect("/invalid")
+    end
+
     @article = db_get_all_equal("Article", "id", article_id).first
     @game = db_get_all_equal("Game", "id", @article['game_id']).first
     @categories = db_get_categories_containing_article(article_id)
@@ -126,6 +171,11 @@ end
 
 get("/articles/:id/edit") do
     article_id = params[:id]
+
+    if !is_integer_empty(article_id)
+        redirect("/invalid")
+    end
+
     @article = db_get_all_equal("Article", "id", article_id).first
     @game = db_get_all_equal("Game", "id", @article['game_id']).first
 
@@ -137,8 +187,25 @@ post("/articles/:id/update") do
     new_title = params[:new_title]
     new_text = params[:new_text]
 
+    if !is_integer_empty(article_id)
+        redirect("/invalid")
+    end
+
     db_update_two_condition("Article", "name", new_title, "text", new_text, "id", article_id)
     redirect("articles/#{article_id}")
+end
+
+post("/articles/:id/delete") do    
+    article_id = params[:id]
+    game_id = params[:game_id]
+
+    if !is_integer_empty(article_id)
+        redirect("/invalid")
+    end
+
+    db_delete("Article", "id", article_id)
+    db_delete("Article_Category_Relation", "article_id", article_id)
+    redirect("/games/#{game_id}")
 end
 
 # ----- Universal routes -----

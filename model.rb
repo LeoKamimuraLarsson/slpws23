@@ -112,12 +112,11 @@ def db_delete(table, compare_attribute, variable)
 end
 
 #  ----- Valideringar -----
-=begin
+
 def is_integer_empty(check_string) 
     # kollar om det endast är siffror. Returnar true om strängen är tom eller en integer.
     return check_string.scan(/\D/).empty?
 end
-=end
 
 def is_empty(string)
     work_string = string

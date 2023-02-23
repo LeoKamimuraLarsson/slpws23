@@ -1,0 +1,24 @@
+p
+    a href="/games" Return to the startsite
+p
+    a href="/games/#{@game['id']}" Return to #{@game["name"]}
+p 
+    a href="/categories/#{@category['id']}" Return to #{@category["name"]}
+
+h2 Add new article to #{@game["name"]} - #{@category["name"]}
+
+form action="/articles" method="post" 
+    p Title:
+    input type="text" name="new_title" autocomplete="off"/
+    p Text:
+    input type="text" name="new_text" autocomplete="off"/
+    p Choose its categories:
+    ul
+        - @all_categories.each do |category|
+            
+            - if category["id"] != @category["id"]
+                <input type="checkbox" name="#{category['name']}" value="True">
+                <label for="#{category['name']}">#{category['name']}</label><br>           
+    p Done?
+    input type="hidden" name="game_id" value="#{@game['id']}"/
+    input type="submit" value="Create article"/
