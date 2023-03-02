@@ -60,6 +60,15 @@ post("/games/:id/delete") do
         redirect("/invalid")
     end
 
+    # ta bort alla artiklar, kategorier och relations
+    all_categories = db_get_all_equal("Category", "game_id", game_id)
+    all_categories.each do |category|
+        delete_all_articles_in_category(category["id"])
+
+        db_delete("Article_Category_Relation", "category_id", category["id"])
+        db_delete("Category", "id", category["id"])
+    end
+
     db_delete("Game", "id", game_id)
     redirect("/games")
 end
@@ -98,7 +107,7 @@ post("/categories/:id/update") do
     category_id = params[:id]
     new_name = params[:new_name]
 
-    if !is_integer_empty(cat_id)
+    if !is_integer_empty(category_id)
         redirect("/invalid")
     end
 
@@ -110,10 +119,13 @@ post("/categories/:id/delete") do
     category_id = params[:id]
     game_id = params[:game_id]
 
-    if !is_integer_empty(cat_id)
+    if !is_integer_empty(category_id)
         redirect("/invalid")
     end
 
+    delete_all_articles_in_category(category_id)
+
+    db_delete("Article_Category_Relation", "category_id", category_id)
     db_delete("Category", "id", category_id)
     redirect("/games/#{game_id}")
 end
@@ -215,4 +227,18 @@ end
 
 get("/invalid") do
     slim(:invalid)
+end
+
+# ----- Methods -----
+
+def delete_all_articles_in_category(category_id)
+    all_articles = db_get_articles_in_category(category_id)
+    all_articles.each do |article|
+        article_belong_category_number = db_get_categories_containing_article(article["id"]).length
+
+        if article_belong_category_number <= 1
+            db_delete("Article", "id", article["id"])
+        end
+
+    end
 end
