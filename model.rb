@@ -1,4 +1,5 @@
 require 'sqlite3'
+require 'bcrypt'
 
 #  ----- Databas -----
 
@@ -132,4 +133,14 @@ def is_empty(string)
     end
 
     return work_string.empty?
+end
+
+# ----- BCrypt -----
+
+def digest_password(password)
+    return BCrypt::Password.create(password)
+end
+
+def authentication(password_digest, entered_password)
+    return BCrypt::Password.new(password_digest) == entered_password
 end

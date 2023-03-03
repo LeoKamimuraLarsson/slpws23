@@ -1,9 +1,50 @@
 require 'sinatra'
 require 'sinatra/reloader'
 require 'slim'
-require 'bcrypt'
 require_relative './model.rb'
 enable :sessions
+
+# ----- Account -----
+
+get("/show_register") do
+    slim(:register)
+end
+
+post("/register") do
+    username = params[:username]
+    password = params[:password]
+    password_confirm = params[:password_confirm]
+
+    # Validering om username är unikt
+    used_usernames = db_get_one("User", "name")
+    used_usernames.each do |used_username|
+        if used_username["name"] == username
+            redirect("/invalid")
+        end
+    end
+    
+    # Kolla password
+    if password == password_confirm
+        password_digested = digest_password(password)
+        db_insert_into("User", "name, pw_digest", username, password_digested)
+        redirect("/show_login")
+    else
+        redirect("/invalid")
+    end
+end
+
+get("/show_login") do
+    slim(:login)
+end
+
+post("/login") do
+    
+end
+
+post('/logout') do
+    session[:id] = nil
+    redirect('/games')
+end
 
 # ----- Games -----
 
