@@ -16,17 +16,12 @@ post("/register") do
     password_confirm = params[:password_confirm]
 
     # Validering om username är unikt
-    used_usernames = db_get_one("User", "name")
-    used_usernames.each do |used_username|
-        if used_username["name"] == username
-            redirect("/invalid")
-        end
+    if !is_username_unique(username)
+        redirect("/invalid")
     end
     
     # Kolla password
-    if password == password_confirm
-        password_digested = digest_password(password)
-        db_insert_into("User", "name, pw_digest", username, password_digested)
+    if register_user(username, password, password_confirm)
         redirect("/show_login")
     else
         redirect("/invalid")
@@ -34,16 +29,49 @@ post("/register") do
 end
 
 get("/show_login") do
+    if session[:cooldown_tid] == nil
+        session[:cooldown_tid] = []
+    end
+    @cooldown_time = session[:cooldown_tid]
     slim(:login)
 end
 
 post("/login") do
-    
+    attempts_given = 3
+    min_time_between_login = 10
+    username = params[:username]
+    password = params[:password]
+
+    user = db_get_all_equal("User", "name", username).first()  
+
+    if (validate_user_and_pass(user, password))
+        pw_digest = user["pw_digest"]
+        user_id = user["id"]
+
+        if (authentication(pw_digest, password))
+            session[:id] = user_id
+            session[:cooldown_tid] = []
+            redirect("/games")
+        end
+    end    
+
+    # Cooldown validering
+    session[:cooldown_tid] << Time.now.to_i
+    redirect_route = "/show_login"
+    cooldown_valid = cooldown_validation(session[:cooldown_tid], attempts_given, min_time_between_login)
+    if cooldown_valid == false
+        redirect_route = "/invalid"
+    elsif cooldown_valid == nil
+        redirect(redirect_route)
+    end
+
+    session[:cooldown_tid] = []
+    redirect(redirect_route)
 end
 
 post('/logout') do
     session[:id] = nil
-    redirect('/games')
+    redirect("/games")
 end
 
 # ----- Games -----

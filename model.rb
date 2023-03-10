@@ -135,6 +135,30 @@ def is_empty(string)
     return work_string.empty?
 end
 
+def is_username_unique(new_username)
+    used_usernames = db_get_one("User", "name")
+    used_usernames.each do |used_username|
+        if used_username["name"] == new_username
+            return false
+        end
+    end
+    return true
+end
+
+def validate_user_and_pass(user, pass) 
+    return user != nil && pass != nil
+end
+
+def cooldown_validation(cooldown_time, attempts_given, min_time_between_login)
+    if session[:cooldown_tid].length >= attempts_given 
+        if session[:cooldown_tid][1] - session[:cooldown_tid][0] <= min_time_between_login && session[:cooldown_tid][2] - session[:cooldown_tid][1] <= min_time_between_login
+            return false # för snabba inloggningar
+        end
+        return true # ingen fara. 
+    end
+    return nil # inte testat tillräckligt många gånger än 
+end
+
 # ----- BCrypt -----
 
 def digest_password(password)
@@ -143,4 +167,16 @@ end
 
 def authentication(password_digest, entered_password)
     return BCrypt::Password.new(password_digest) == entered_password
+end
+
+# ----- Other -----
+
+def register_user(username, password, password_confirm)
+    if password == password_confirm
+        password_digested = digest_password(password)
+        db_insert_into("User", "name, pw_digest", username, password_digested)
+        return true
+    else
+        return false
+    end
 end

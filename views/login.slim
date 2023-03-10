@@ -2,6 +2,9 @@ a href="/games" Return to the startsite
 
 h2 Log in 
 
+- if @cooldown_time.length != 0
+    p Incorrect username or password
+
 form action="/login" method="post" 
     input type="text" name="username" placeholder="Username"/
     input type="password" name="password" placeholder="Password"/
