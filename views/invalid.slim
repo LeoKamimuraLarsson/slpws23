@@ -1,4 +1,7 @@
 p
     a href="/games" Return to the startsite
 
-p Error: Invalid input
+- if @error_msg == nil
+    p Error: Invalid input
+- else 
+    p Error: #{@error_msg}

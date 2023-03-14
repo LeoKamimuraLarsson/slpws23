@@ -15,8 +15,15 @@ post("/register") do
     password = params[:password]
     password_confirm = params[:password_confirm]
 
+    # Validera så att username och password inte är nil, samt att username inte är endast mellanslag
+    if !validate_user_and_pass(username, password) || is_empty(username)
+        session[:error_msg] = "Invalid username or password"
+        redirect("/invalid")
+    end
+
     # Validering om username är unikt
     if !is_username_unique(username)
+        session[:error_msg] = "The username is not unique"
         redirect("/invalid")
     end
     
@@ -24,6 +31,7 @@ post("/register") do
     if register_user(username, password, password_confirm)
         redirect("/show_login")
     else
+        session[:error_msg] = "The passwords does not match"
         redirect("/invalid")
     end
 end
@@ -61,6 +69,7 @@ post("/login") do
     cooldown_valid = cooldown_validation(session[:cooldown_tid], attempts_given, min_time_between_login)
     if cooldown_valid == false
         redirect_route = "/invalid"
+        session[:error_msg] = "Too many login attempts at a short time"
     elsif cooldown_valid == nil
         redirect(redirect_route)
     end
@@ -295,6 +304,8 @@ end
 # ----- Universal routes -----
 
 get("/invalid") do
+    @error_msg = session[:error_msg]
+    session[:error_msg] = nil
     slim(:invalid)
 end
 
