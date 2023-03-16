@@ -6,25 +6,26 @@ p
 h2 #{@game["name"]} - #{@category["name"]}
 
 p Select an article:
-
-form action="/articles/new" method="get" 
-    input type="hidden" name="game_id" value="#{@game['id']}"/
-    input type="hidden" name="category_id" value="#{@category['id']}"/
-    input type="submit" value="Add new article"/
+- if session[:id] != nil
+    form action="/articles/new" method="get" 
+        input type="hidden" name="game_id" value="#{@game['id']}"/
+        input type="hidden" name="category_id" value="#{@category['id']}"/
+        input type="submit" value="Add new article"/
 
 ol
 - @articles.each do |article|
     li
         a href="/articles/#{article['id']}" #{article["name"]}
 
-h3 Admin 
+- if session[:id] == 1
+    h3 Admin 
 
-p Change the category's name:
-form action="/categories/#{@category['id']}/update" method="post" 
-    input type="text" name="new_name" placeholder="New name" autocomplete="off"/
-    input type="submit" value="Update"/
+    p Change the category's name:
+    form action="/categories/#{@category['id']}/update" method="post" 
+        input type="text" name="new_name" placeholder="New name" autocomplete="off"/
+        input type="submit" value="Update"/
 
-p Delete category:
-form action="/categories/#{@category['id']}/delete" method="post" 
-    input type="submit" value="Delete category"/
-    input type="hidden" name="game_id" value="#{@game['id']}"/
+    p Delete category:
+    form action="/categories/#{@category['id']}/delete" method="post" 
+        input type="submit" value="Delete category"/
+        input type="hidden" name="game_id" value="#{@game['id']}"/

@@ -7,10 +7,16 @@ enable :sessions
 # ----- Account -----
 
 get("/show_register") do
+    if is_logged_in()
+        redirect("/")
+    end
     slim(:register)
 end
 
 post("/register") do
+    if is_logged_in()
+        redirect("/")
+    end
     username = params[:username]
     password = params[:password]
     password_confirm = params[:password_confirm]
@@ -37,6 +43,9 @@ post("/register") do
 end
 
 get("/show_login") do
+    if is_logged_in()
+        redirect("/")
+    end
     if session[:cooldown_tid] == nil
         session[:cooldown_tid] = []
     end
@@ -45,6 +54,9 @@ get("/show_login") do
 end
 
 post("/login") do
+    if is_logged_in()
+        redirect("/")
+    end
     attempts_given = 3
     min_time_between_login = 10
     username = params[:username]
@@ -95,10 +107,15 @@ get("/games") do # visa alla spel
 end 
 
 post("/games") do # lägg nytt spel
+    if !is_logged_in()
+        session[:error_msg] = "Access denied"
+        redirect("/invalid")
+    end
     name = params[:name]
 
     # kolla om namnet är tomt
     if (is_empty(name))
+        session[:error_msg] = "Invalid name"
         redirect("/invalid")
     end
 
@@ -120,6 +137,10 @@ get("/games/:id") do # visa ett spel
 end
 
 post("/games/:id/update") do
+    if !is_admin()
+        session[:error_msg] = "Access denied"
+        redirect("/invalid")
+    end
     game_id = params[:id]
     new_name = params[:new_name]
 
@@ -132,6 +153,10 @@ post("/games/:id/update") do
 end
 
 post("/games/:id/delete") do
+    if !is_admin()
+        session[:error_msg] = "Access denied"
+        redirect("/invalid")
+    end
     game_id = params[:id]
 
     if !is_integer_empty(game_id)
@@ -154,11 +179,16 @@ end
 # ----- Categories -----
 
 post("/categories") do # lägg till ny kategori
+    if !is_logged_in()
+        session[:error_msg] = "Access denied"
+        redirect("/invalid")
+    end
     name = params[:name]
     game_id = params[:game_id]
 
     # kolla om namnet är tomt
     if (is_empty(name))
+        session[:error_msg] = "Invalid name"
         redirect("/invalid")
     end
 
@@ -182,6 +212,10 @@ get("/categories/:id") do
 end
 
 post("/categories/:id/update") do
+    if !is_admin()
+        session[:error_msg] = "Access denied"
+        redirect("/invalid")
+    end
     category_id = params[:id]
     new_name = params[:new_name]
 
@@ -194,6 +228,10 @@ post("/categories/:id/update") do
 end
 
 post("/categories/:id/delete") do
+    if !is_admin()
+        session[:error_msg] = "Access denied"
+        redirect("/invalid")
+    end
     category_id = params[:id]
     game_id = params[:game_id]
 
@@ -211,6 +249,10 @@ end
 # ----- Articles -----
 
 get("/articles/new") do
+    if !is_logged_in()
+        session[:error_msg] = "Access denied"
+        redirect("/invalid")
+    end
     game_id = params[:game_id]
     category_id = params[:category_id]
     @game = db_get_all_equal("Game", "id", game_id).first
@@ -221,12 +263,17 @@ get("/articles/new") do
 end
 
 post("/articles") do # lägg till ny artikel
+    if !is_logged_in()
+        session[:error_msg] = "Access denied"
+        redirect("/invalid")
+    end
     game_id = params[:game_id]
     primary_category_id = params[:primary_category_id]
     title = params[:new_title]
     text = params[:new_text]
 
     if (is_empty(title))
+        session[:error_msg] = "Invalid title"
         redirect("/invalid")
     end
 
@@ -263,6 +310,10 @@ get("/articles/:id") do
 end
 
 get("/articles/:id/edit") do
+    if !is_logged_in()
+        session[:error_msg] = "Access denied"
+        redirect("/invalid")
+    end
     article_id = params[:id]
 
     if !is_integer_empty(article_id)
@@ -276,6 +327,10 @@ get("/articles/:id/edit") do
 end
 
 post("/articles/:id/update") do
+    if !is_logged_in()
+        session[:error_msg] = "Access denied"
+        redirect("/invalid")
+    end
     article_id = params[:id]
     new_title = params[:new_title]
     new_text = params[:new_text]
@@ -289,6 +344,10 @@ post("/articles/:id/update") do
 end
 
 post("/articles/:id/delete") do    
+    if !is_logged_in()
+        session[:error_msg] = "Access denied"
+        redirect("/invalid")
+    end 
     article_id = params[:id]
     game_id = params[:game_id]
 
@@ -321,4 +380,12 @@ def delete_all_articles_in_category(category_id)
         end
 
     end
+end
+
+def is_logged_in()
+    return session[:id] != nil
+end
+
+def is_admin()
+    return session[:id] == 1
 end

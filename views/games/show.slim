@@ -3,24 +3,25 @@ a href="/games" Return to the startsite
 h2 = @game["name"]
 
 p Select a category:
-
-form action="/categories" method="post" 
-    input type="text" name="name" placeholder="Name of new category" autocomplete="off"/
-    input type="hidden" name="game_id" value="#{@game['id']}"/
-    input type="submit" value="Add new category"/
+- if session[:id] != nil
+    form action="/categories" method="post" 
+        input type="text" name="name" placeholder="Name of new category" autocomplete="off"/
+        input type="hidden" name="game_id" value="#{@game['id']}"/
+        input type="submit" value="Add new category"/
 
 ol
 - @categories.each do |category|
     li
         a href="/categories/#{category['id']}" #{category["name"]}
 
-h3 Admin 
+- if session[:id] == 1
+    h3 Admin 
 
-p Change the game's name:
-form action="/games/#{@game['id']}/update" method="post" 
-    input type="text" name="new_name" placeholder="New name" autocomplete="off"/
-    input type="submit" value="Update"/
+    p Change the game's name:
+    form action="/games/#{@game['id']}/update" method="post" 
+        input type="text" name="new_name" placeholder="New name" autocomplete="off"/
+        input type="submit" value="Update"/
 
-p Delete game:
-form action="/games/#{@game['id']}/delete" method="post" 
-    input type="submit" value="Delete game"/
+    p Delete game:
+    form action="/games/#{@game['id']}/delete" method="post" 
+        input type="submit" value="Delete game"/

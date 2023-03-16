@@ -8,8 +8,8 @@ p
         a href="/categories/#{category['id']}" Return to #{category["name"]}
 
 h2 #{@game["name"]} - #{@article["name"]}
-
-form action="/articles/#{@article['id']}/edit" method="get" 
-    input type="submit" value="Edit Article"/
+- if session[:id] != nil
+    form action="/articles/#{@article['id']}/edit" method="get" 
+        input type="submit" value="Edit Article"/
 
 p = @article['text']

@@ -11,6 +11,7 @@ html lang="en"
                 a href="/show_register" Register
                 a href="/show_login" Login
             - else 
+                p User ID: #{session[:id]}
                 form action="/logout" method="post" 
                     input type="submit" value="LOG OUT"/
         h1 The Wiki
