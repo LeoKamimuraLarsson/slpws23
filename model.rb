@@ -119,6 +119,10 @@ def is_integer_empty(check_string)
     return check_string.scan(/\D/).empty?
 end
 
+def db_select_is_empty(check)
+    return check == nil
+end
+
 def is_empty(string)
     work_string = string
 

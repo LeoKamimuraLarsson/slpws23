@@ -70,6 +70,7 @@ post("/login") do
 
         if (authentication(pw_digest, password))
             session[:id] = user_id
+            session[:user] = username
             session[:cooldown_tid] = []
             redirect("/games")
         end
@@ -92,6 +93,7 @@ end
 
 post('/logout') do
     session[:id] = nil
+    session[:user] = nil
     redirect("/games")
 end
 
@@ -125,12 +127,13 @@ end
 
 get("/games/:id") do # visa ett spel
     game_id = params[:id]
+    @game = db_get_all_equal("Game", "id", game_id).first
     
-    if !is_integer_empty(game_id)
+    if db_select_is_empty(@game)
+        session[:error_msg] = "404 Page Not Found"
         redirect("/invalid")
     end
-    
-    @game = db_get_all_equal("Game", "id", game_id).first
+        
     @categories = db_get_all_equal_order_asc("Category", "game_id", game_id, "name") 
 
     slim(:"games/show")
@@ -198,12 +201,13 @@ end
 
 get("/categories/:id") do
     cat_id = params[:id]
-    if !is_integer_empty(cat_id)
+    @category = db_get_all_equal("Category", "id", cat_id).first
+    if db_select_is_empty(@category)
+        session[:error_msg] = "404 Page Not Found"
         redirect("/invalid")
     end
 
-    @articles = db_get_articles_in_category(cat_id)
-    @category = db_get_all_equal("Category", "id", cat_id).first
+    @articles = db_get_articles_in_category(cat_id)    
     
     game_id = @category["game_id"]
     @game = db_get_all_equal("Game", "id", game_id).first
@@ -297,12 +301,13 @@ end
 
 get("/articles/:id") do
     article_id = params[:id]
+    @article = db_get_all_equal("Article", "id", article_id).first
 
-    if !is_integer_empty(article_id)
+    if db_select_is_empty(@article)
+        session[:error_msg] = "404 Page Not Found"
         redirect("/invalid")
     end
-
-    @article = db_get_all_equal("Article", "id", article_id).first
+  
     @game = db_get_all_equal("Game", "id", @article['game_id']).first
     @categories = db_get_categories_containing_article(article_id)
     
@@ -315,12 +320,13 @@ get("/articles/:id/edit") do
         redirect("/invalid")
     end
     article_id = params[:id]
+    @article = db_get_all_equal("Article", "id", article_id).first
 
-    if !is_integer_empty(article_id)
+    if db_select_is_empty(@article)
+        session[:error_msg] = "404 Page Not Found"
         redirect("/invalid")
     end
-
-    @article = db_get_all_equal("Article", "id", article_id).first
+    
     @game = db_get_all_equal("Game", "id", @article['game_id']).first
 
     slim(:"articles/edit")
