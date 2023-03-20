@@ -163,6 +163,14 @@ def cooldown_validation(cooldown_time, attempts_given, min_time_between_login)
     return nil # inte testat tillräckligt många gånger än 
 end
 
+def validate_enough_categories_for_article(categories)
+    if categories.length == 0
+        return false
+    else
+        return true
+    end
+end
+
 # ----- BCrypt -----
 
 def digest_password(password)

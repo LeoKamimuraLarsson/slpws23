@@ -328,6 +328,8 @@ get("/articles/:id/edit") do
     end
     
     @game = db_get_all_equal("Game", "id", @article['game_id']).first
+    @related_categories = db_get_categories_containing_article(article_id)
+    @all_categories = db_get_all_equal("Category", "game_id", @article['game_id'])
 
     slim(:"articles/edit")
 end
@@ -338,14 +340,38 @@ post("/articles/:id/update") do
         redirect("/invalid")
     end
     article_id = params[:id]
+    game_id = params[:game_id]
     new_title = params[:new_title]
     new_text = params[:new_text]
 
-    if !is_integer_empty(article_id)
+    new_category_relations = []
+    all_categories = db_get_all_equal("Category", "game_id", game_id)
+    all_categories.each do |category| 
+        if (params[:"#{category["name"]}"] == "True")
+           new_category_relations << category
+        end       
+    end
+
+    # Valideringar
+    if is_empty(new_title)
+        session[:error_msg] = "Invalid title"
+        redirect("/invalid")
+    elsif !validate_enough_categories_for_article(new_category_relations)
+        session[:error_msg] = "You must select at least one category"
+        redirect("/invalid")
+    elsif !is_integer_empty(article_id)
         redirect("/invalid")
     end
 
+    # Update article
     db_update_two_condition("Article", "name", new_title, "text", new_text, "id", article_id)
+
+    # Update article_category_relation
+    db_delete("Article_Category_Relation", "article_id", article_id)
+    new_category_relations.each do |category|
+        db_insert_into("Article_Category_Relation", "article_id, category_id", article_id, category["id"])
+    end    
+
     redirect("articles/#{article_id}")
 end
 
