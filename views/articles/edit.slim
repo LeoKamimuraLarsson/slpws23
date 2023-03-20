@@ -18,10 +18,11 @@ form action="/articles/#{@article['id']}/update" method="post"
                     - already_checked = true 
                     - break 
             - if already_checked
-                <input type="checkbox" name="#{category['name']}" value="True" checked=checked>
+                input type="checkbox" name="#{category['name']}" value="True" checked="checked"/
             - else 
-                <input type="checkbox" name="#{category['name']}" value="True">
-            <label for="#{category['name']}">#{category['name']}</label><br>  
+                input type="checkbox" name="#{category['name']}" value="True"/
+            label for="#{category['name']}" #{category['name']}
+            br/
                 
     p Done?
     input type="hidden" name="game_id" value="#{@game['id']}"/

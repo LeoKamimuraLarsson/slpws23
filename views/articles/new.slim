@@ -18,8 +18,9 @@ form action="/articles" method="post"
         - @all_categories.each do |category|
             
             - if category["id"] != @category["id"]
-                <input type="checkbox" name="#{category['name']}" value="True">
-                <label for="#{category['name']}">#{category['name']}</label><br>           
+                input type="checkbox" name="#{category['name']}" value="True"/
+                label for="#{category['name']}" #{category['name']}
+                br/          
     p Done?
     input type="hidden" name="game_id" value="#{@game['id']}"/
     input type="hidden" name="primary_category_id" value="#{@category['id']}"/
