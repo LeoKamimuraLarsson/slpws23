@@ -8,8 +8,10 @@ p
         a href="/categories/#{category['id']}" Return to #{category["name"]}
 
 h2 #{@game["name"]} - #{@article["name"]}
-- if session[:id] != nil
+- if is_author_helper(@article["id"]) || is_admin()
     form action="/articles/#{@article['id']}/edit" method="get" 
         input type="submit" value="Edit Article"/
+
+p Author: #{get_user(@article["user_id"])["name"]}
 
 p = @article['text']

@@ -9,7 +9,7 @@ form action="/articles/#{@article['id']}/update" method="post"
     p Text:
     /input type="text" name="new_text" value="#{@article['text']}" autocomplete="off"/
     textarea name="new_text" cols="30" rows="10" autocomplete="off" #{@article['text']}
-    p Choose additional categories:
+    p Choose categories:
     ul
         - @all_categories.each do |category|
             - already_checked = false 

@@ -171,6 +171,14 @@ def validate_enough_categories_for_article(categories)
     end
 end
 
+def is_author(article_id)
+    the_article = db_get_all_equal("Article", "id", article_id).first()
+    if db_select_is_empty(the_article)
+        return false
+    end
+    return the_article["user_id"] == session[:id]
+end
+
 # ----- BCrypt -----
 
 def digest_password(password)
@@ -190,5 +198,17 @@ def register_user(username, password, password_confirm)
         return true
     else
         return false
+    end
+end
+
+# ----- Helpers -----
+
+helpers do
+    def get_user(user_id)
+        return db_get_all_equal("User", "id", user_id).first()
+    end
+
+    def is_author_helper(article_id)
+        return is_author(article_id)
     end
 end

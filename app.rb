@@ -261,6 +261,10 @@ get("/articles/new") do
     category_id = params[:category_id]
     @game = db_get_all_equal("Game", "id", game_id).first
     @category = db_get_all_equal("Category", "id", category_id).first
+    if db_select_is_empty(@game) || db_select_is_empty(@game)
+        session[:error_msg] = "404 Page Not Found"
+        redirect("/invalid")
+    end
     @all_categories = db_get_all_equal_order_asc("Category", "game_id", game_id, "name")
 
     slim(:"articles/new")
@@ -282,7 +286,7 @@ post("/articles") do # lägg till ny artikel
     end
 
     # lägg till artikeln
-    db_insert_into("Article", "name, text, game_id", title, text, game_id)
+    db_insert_into("Article", "name, text, game_id, user_id", title, text, game_id, session[:id])
     new_article = db_get_all_order_asc("Article", "id").last() # Den nyaste artikeln är alltid sist.
 
     # lägg till i article_category_relation
@@ -315,11 +319,11 @@ get("/articles/:id") do
 end
 
 get("/articles/:id/edit") do
-    if !is_logged_in()
+    article_id = params[:id]
+    if !is_author(article_id) && !is_admin()
         session[:error_msg] = "Access denied"
         redirect("/invalid")
-    end
-    article_id = params[:id]
+    end    
     @article = db_get_all_equal("Article", "id", article_id).first
 
     if db_select_is_empty(@article)
@@ -335,11 +339,11 @@ get("/articles/:id/edit") do
 end
 
 post("/articles/:id/update") do
-    if !is_logged_in()
+    article_id = params[:id]
+    if !is_author(article_id) && !is_admin()
         session[:error_msg] = "Access denied"
         redirect("/invalid")
     end
-    article_id = params[:id]
     game_id = params[:game_id]
     new_title = params[:new_title]
     new_text = params[:new_text]
@@ -375,12 +379,12 @@ post("/articles/:id/update") do
     redirect("articles/#{article_id}")
 end
 
-post("/articles/:id/delete") do    
-    if !is_logged_in()
+post("/articles/:id/delete") do   
+    article_id = params[:id] 
+    if !is_author(article_id) && !is_admin()
         session[:error_msg] = "Access denied"
         redirect("/invalid")
     end 
-    article_id = params[:id]
     game_id = params[:game_id]
 
     if !is_integer_empty(article_id)
@@ -418,6 +422,10 @@ def is_logged_in()
     return session[:id] != nil
 end
 
-def is_admin()
-    return session[:id] == 1
+# ----- Helpers -----
+
+helpers do
+    def is_admin()
+        return session[:id] == 1
+    end
 end
