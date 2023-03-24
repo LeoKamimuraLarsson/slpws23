@@ -179,6 +179,11 @@ def is_author(article_id)
     return the_article["user_id"] == session[:id]
 end
 
+def validate_text_length(text)
+    # Returnar true om texten är en ok längd
+    return text.length <= 100
+end
+
 # ----- BCrypt -----
 
 def digest_password(password)

@@ -119,6 +119,9 @@ post("/games") do # lägg nytt spel
     if (is_empty(name))
         session[:error_msg] = "Invalid name"
         redirect("/invalid")
+    elsif !validate_text_length(name)
+        session[:error_msg] = "The title is too long. (More than 100 characters)"
+        redirect("/invalid")
     end
 
     db_insert_one_into("Game", "name", name)
@@ -148,6 +151,12 @@ post("/games/:id/update") do
     new_name = params[:new_name]
 
     if !is_integer_empty(game_id)
+        redirect("/invalid")
+    elsif (is_empty(new_name))
+        session[:error_msg] = "Invalid title"
+        redirect("/invalid")
+    elsif !validate_text_length(new_name)
+        session[:error_msg] = "The title is too long. (More than 100 characters)"
         redirect("/invalid")
     end
 
@@ -193,6 +202,9 @@ post("/categories") do # lägg till ny kategori
     if (is_empty(name))
         session[:error_msg] = "Invalid name"
         redirect("/invalid")
+    elsif !validate_text_length(name)
+        session[:error_msg] = "The title is too long. (More than 100 characters)"
+        redirect("/invalid")
     end
 
     db_insert_into("Category", "name, game_id", name, game_id)
@@ -224,6 +236,12 @@ post("/categories/:id/update") do
     new_name = params[:new_name]
 
     if !is_integer_empty(category_id)
+        redirect("/invalid")
+    elsif (is_empty(new_name))
+        session[:error_msg] = "Invalid title"
+        redirect("/invalid")
+    elsif !validate_text_length(new_name)
+        session[:error_msg] = "The title is too long. (More than 100 characters)"
         redirect("/invalid")
     end
 
@@ -282,6 +300,9 @@ post("/articles") do # lägg till ny artikel
 
     if (is_empty(title))
         session[:error_msg] = "Invalid title"
+        redirect("/invalid")
+    elsif !validate_text_length(title)
+        session[:error_msg] = "The title is too long. (More than 100 characters)"
         redirect("/invalid")
     end
 
@@ -359,6 +380,9 @@ post("/articles/:id/update") do
     # Valideringar
     if is_empty(new_title)
         session[:error_msg] = "Invalid title"
+        redirect("/invalid")
+    elsif !validate_text_length(new_title)
+        session[:error_msg] = "The title is too long. (More than 100 characters)"
         redirect("/invalid")
     elsif !validate_enough_categories_for_article(new_category_relations)
         session[:error_msg] = "You must select at least one category"
