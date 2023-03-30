@@ -3,16 +3,34 @@ require 'sinatra/reloader'
 require 'slim'
 require_relative './model.rb'
 enable :sessions
+include Model
 
-# ----- Account -----
+# Frågor:
+# - är @param korrekt eller kolon framför?
+#       - dynamiska har kolon
 
+
+# Displays a register form
+#
+# @see #is_logged_in
 get("/show_register") do
     if is_logged_in()
         redirect("/")
     end
     slim(:register)
 end
-
+ 
+# Registers a new user and redirects to either "/invalid" or "/show_login"
+#
+# @param [String] username, the entered username
+# @param [String] password, the entered password
+# @param [String] password_confirm, the repeated password
+#
+# @see #is_logged_in
+# @see Model#validate_user_and_pass
+# @see Model#is_empty
+# @see Model#is_username_unique
+# @see Model#register_user
 post("/register") do
     if is_logged_in()
         redirect("/")
@@ -42,6 +60,9 @@ post("/register") do
     end
 end
 
+# Displays a login form
+#
+# @see #is_logged_in
 get("/show_login") do
     if is_logged_in()
         redirect("/")
@@ -53,6 +74,16 @@ get("/show_login") do
     slim(:login)
 end
 
+# Attempts login and updates the session and redirects to "/games"
+#
+# @param [String] username, The username
+# @param [String] password, The password
+#
+# @see #is_logged_in
+# @see Model#db_get_all_equal
+# @see Model#validate_user_and_pass
+# @see Model#authentication
+# @see Model#cooldown_validation
 post("/login") do
     if is_logged_in()
         redirect("/")
@@ -91,6 +122,8 @@ post("/login") do
     redirect(redirect_route)
 end
 
+# The user log outs and redirects to "/games"
+#
 post('/logout') do
     session[:id] = nil
     session[:user] = nil
@@ -99,16 +132,29 @@ end
 
 # ----- Games -----
 
+# Redirects to the main page "/games"
+#
 get("/") do
     redirect("/games")
 end
 
-get("/games") do # visa alla spel
+# Displays all games
+#
+# @see Model#db_get_all_order_asc
+get("/games") do 
     @games = db_get_all_order_asc("Game", "name")
     slim(:"games/index")
 end 
 
-post("/games") do # lägg nytt spel
+# Creates a new game and redirects to "/"
+#
+# @param [String] name, The name of the new game
+#
+# @see #is_logged_in
+# @see Model#is_empty
+# @see Model#validate_text_length
+# @see Model#db_insert_one_into
+post("/games") do 
     if !is_logged_in()
         session[:error_msg] = "Access denied"
         redirect("/invalid")
@@ -128,7 +174,14 @@ post("/games") do # lägg nytt spel
     redirect("/")
 end
 
-get("/games/:id") do # visa ett spel
+# Displays one game and its categories
+#
+# @param [Integer] :id, The ID of the article
+#
+# @see Model#db_get_all_equal
+# @see Model#db_select_is_empty
+# @see Model#db_get_all_equal_order_asc
+get("/games/:id") do 
     game_id = params[:id]
     @game = db_get_all_equal("Game", "id", game_id).first
     
@@ -142,6 +195,15 @@ get("/games/:id") do # visa ett spel
     slim(:"games/show")
 end
 
+# Changes the name of one existing game and redirects to "/games/:id"
+#
+# @param [Integer] :id, The ID of the article
+# @param [String] new_name, The new name of the article
+#
+# @see #is_admin
+# @see Model#is_integer_empty
+# @see Model#is_empty
+# @see Model#validate_text_length
 post("/games/:id/update") do
     if !is_admin()
         session[:error_msg] = "Access denied"
@@ -164,6 +226,15 @@ post("/games/:id/update") do
     redirect("/games/#{game_id}")
 end
 
+# Deletes one game and its categories and articles, and redirects to "/games"
+#
+# @param [Integer] :id, The ID of the article
+#
+# @see #is_admin
+# @see #delete_all_articles_in_category
+# @see Model#is_integer_empty
+# @see Model#db_get_all_equal
+# @see Model#db_delete
 post("/games/:id/delete") do
     if !is_admin()
         session[:error_msg] = "Access denied"
@@ -190,7 +261,16 @@ end
 
 # ----- Categories -----
 
-post("/categories") do # lägg till ny kategori
+# Creates a new category and redirects to "/games/#{game_id}"
+#
+# @param [String] name, The name of the new category
+# @param [Integer] game_id, The id of the category's game
+#
+# @see #is_logged_in
+# @see Model#is_empty
+# @see Model#validate_text_length
+# @see Model#db_insert_into
+post("/categories") do
     if !is_logged_in()
         session[:error_msg] = "Access denied"
         redirect("/invalid")
@@ -211,6 +291,13 @@ post("/categories") do # lägg till ny kategori
     redirect("/games/#{game_id}")
 end
 
+# Displays one category and its articles
+#
+# @params [Integer] :id, The category's id
+#
+# @see Model#db_get_all_equal
+# @see Model#db_select_is_empty
+# @see Model#db_get_articles_in_category
 get("/categories/:id") do
     cat_id = params[:id]
     @category = db_get_all_equal("Category", "id", cat_id).first
@@ -227,6 +314,16 @@ get("/categories/:id") do
     slim(:"categories/show")
 end
 
+# Changes the name of one existing category and redirects to "/categories/#{category_id}"
+#
+# @param [Integer] :id, The category's id
+# @param [String] new_name, The new name for the category
+#
+# @see #is_admin
+# @see Model#is_integer_empty
+# @see Model#is_empty
+# @see Model#validate_text_length
+# @see Model#db_update_condition
 post("/categories/:id/update") do
     if !is_admin()
         session[:error_msg] = "Access denied"
@@ -249,6 +346,15 @@ post("/categories/:id/update") do
     redirect("/categories/#{category_id}")
 end
 
+# Deletes one category and all its articles, and redirects to "/games/#{game_id}"
+#
+# @param [Integer] :id, The category's id
+# @param [Integer] game_id, The category's game's id
+#
+# @see #is_admin
+# @see #delete_all_articles_in_category
+# @see Model#is_integer_empty
+# @see Model#db_delete
 post("/categories/:id/delete") do
     if !is_admin()
         session[:error_msg] = "Access denied"
@@ -270,6 +376,15 @@ end
 
 # ----- Articles -----
 
+# Displays a form to create a new article
+#
+# @param [Integer] game_id, The article's game's id
+# @param [Integer] category_id, The article's primary category's id
+#
+# @see #is_logged_in
+# @see Model#db_get_all_equal
+# @see Model#db_select_is_empty
+# @see Model#db_get_all_equal_order_asc
 get("/articles/new") do
     if !is_logged_in()
         session[:error_msg] = "Access denied"
@@ -288,7 +403,20 @@ get("/articles/new") do
     slim(:"articles/new")
 end
 
-post("/articles") do # lägg till ny artikel
+# Creates a new article and redirects to "/articles/#{new_article['id']}"
+#
+# @param [Integer] game_id, The article's game's id
+# @param [Integer] primary_category_id, The article's primary category's id
+# @param [String] title, The article's title
+# @param [String] text, The article's text
+#
+# @see #is_logged_in
+# @see Model#is_empty
+# @see Model#validate_text_length
+# @see Model#db_insert_into
+# @see Model#db_get_all_order_asc
+# @see Model#db_get_all_equal
+post("/articles") do 
     if !is_logged_in()
         session[:error_msg] = "Access denied"
         redirect("/invalid")
@@ -324,6 +452,13 @@ post("/articles") do # lägg till ny artikel
     redirect("/articles/#{new_article['id']}")
 end
 
+# Displays one article 
+#
+# @param [Integer] :id, The article's id
+#
+# @see Model#db_get_all_equal
+# @see Model#db_select_is_empty
+# @see Model#db_get_categories_containing_article
 get("/articles/:id") do
     article_id = params[:id]
     @article = db_get_all_equal("Article", "id", article_id).first
@@ -339,6 +474,15 @@ get("/articles/:id") do
     slim(:"articles/show")
 end
 
+# Displays a form to edit one existing article
+# 
+# @param [Integer] :id, The article's id
+#
+# @see #is_admin
+# @see Model#is_author
+# @see Model#db_get_all_equal
+# @see Model#db_select_is_empty
+# @see Model#db_get_categories_containing_article
 get("/articles/:id/edit") do
     article_id = params[:id]
     if !is_author(article_id) && !is_admin()
@@ -359,6 +503,23 @@ get("/articles/:id/edit") do
     slim(:"articles/edit")
 end
 
+# Updates one existing article and redirects to "articles/#{article_id}"
+#
+# @param [Integer] :id, The article's id
+# @param [Integer] game_id, The article's game's id
+# @param [String] new_title, The article's new title
+# @param [String] new_text, The article's new text
+#
+# @see #is_admin
+# @see Model#is_author
+# @see Model#db_get_all_equal
+# @see Model#is_empty
+# @see Model#validate_text_length
+# @see Model#validate_enough_categories_for_article
+# @see Model#is_integer_empty
+# @see Model#db_update_two_condition
+# @see Model#db_delete
+# @see Model#db_insert_into
 post("/articles/:id/update") do
     article_id = params[:id]
     if !is_author(article_id) && !is_admin()
@@ -403,6 +564,15 @@ post("/articles/:id/update") do
     redirect("articles/#{article_id}")
 end
 
+# Deletes one article and its relations to categories, and redirects to "/games/#{game_id}"
+#
+# @param [Integer] :id, The article's id
+# @param [Integer] game_id, The article's game's id
+#
+# @see #is_admin
+# @see Model#is_author
+# @see Model#is_integer_empty
+# @see Model#db_delete
 post("/articles/:id/delete") do   
     article_id = params[:id] 
     if !is_author(article_id) && !is_admin()
@@ -422,6 +592,8 @@ end
 
 # ----- Universal routes -----
 
+# Displays an error message
+#
 get("/invalid") do
     @error_msg = session[:error_msg]
     session[:error_msg] = nil
@@ -430,6 +602,11 @@ end
 
 # ----- Methods -----
 
+# Deletes all articles related to a category if they are not connected to any other category
+#
+# @param [Integer] category_id, The id of the category
+#
+# @return [nil] nothing.
 def delete_all_articles_in_category(category_id)
     all_articles = db_get_articles_in_category(category_id)
     all_articles.each do |article|
@@ -442,6 +619,9 @@ def delete_all_articles_in_category(category_id)
     end
 end
 
+# Authorization: is the user logged in
+#
+# @return [Boolean]
 def is_logged_in()
     return session[:id] != nil
 end
@@ -449,7 +629,28 @@ end
 # ----- Helpers -----
 
 helpers do
+    # Authorization: is the user the admin
+    #
+    # @return [Boolean]
     def is_admin()
         return session[:id] == 1
+    end
+
+    # Gets one user from the database
+    #
+    # @param [Integer] user_id, The user's id
+    #
+    # @return [Hash] containing all data of a user
+    def get_user(user_id)
+        return db_get_all_equal("User", "id", user_id).first()
+    end
+
+    # Authorization: is the user the the author of a article
+    #
+    # @param [Integer] article_id, The article's id
+    #
+    # @return [Boolean]
+    def is_author_helper(article_id)
+        return is_author(article_id)
     end
 end
