@@ -650,7 +650,11 @@ helpers do
     # @param [Integer] article_id, The article's id
     #
     # @return [Boolean]
-    def is_author_helper(article_id)
-        return is_author(article_id)
+    def is_author(article_id)
+        the_article = db_get_all_equal("Article", "id", article_id).first()
+        if db_select_is_empty(the_article)
+            return false
+        end
+        return the_article["user_id"] == session[:id]
     end
 end
