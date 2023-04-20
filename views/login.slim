@@ -5,7 +5,7 @@ h2 Log in
 - if @cooldown_time.length != 0
     p Incorrect username or password
 
-form action="/login" method="post" 
+form.vertical_form action="/login" method="post" 
     input type="text" name="username" placeholder="Username"/
     input type="password" name="password" placeholder="Password"/
     input type="submit" value="Log in"/

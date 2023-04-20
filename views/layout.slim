@@ -4,15 +4,16 @@ html lang="en"
         meta charset="UTF-8"/
         meta http-equiv="X-UA-Compatible" content="IE=edge"/
         meta name="viewport" content="width=device-width, initial-scale=1.0"/
-        title The Wiki
+        title Mixed Wiki
+        link rel="stylesheet" href="/css/style.css"/
     body 
         nav 
             - if session[:id] == nil
-                a href="/show_register" Register
-                a href="/show_login" Login
+                a.nav_content href="/show_register" Register
+                a.nav_content href="/show_login" Login
             - else 
-                p User: #{session[:user]}
+                p.nav_content User: #{session[:user]}
                 form action="/logout" method="post" 
-                    input type="submit" value="LOG OUT"/
-        h1 The Wiki
+                    input.nav_content type="submit" value="LOG OUT"/
+        h1 Mixed Wiki
         ==yield

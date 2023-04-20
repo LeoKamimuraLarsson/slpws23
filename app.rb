@@ -467,6 +467,9 @@ get("/articles/:id") do
         session[:error_msg] = "404 Page Not Found"
         redirect("/invalid")
     end
+
+    # Chop up the article text
+    @article_content = @article["text"].split("\r")
   
     @game = db_get_all_equal("Game", "id", @article['game_id']).first
     @categories = db_get_categories_containing_article(article_id)
